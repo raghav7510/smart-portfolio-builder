@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime
 from functools import wraps
 import logging
+import threading
 
 app = Flask(__name__)
 
@@ -390,4 +391,6 @@ def comparison():
         return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Only run Flask app if in main thread (prevents Streamlit conflicts)
+    if threading.current_thread() is threading.main_thread():
+        app.run(debug=False, port=5000)
