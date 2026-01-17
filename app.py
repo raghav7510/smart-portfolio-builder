@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, jsonify
-import numpy as np
 from datetime import datetime
 from functools import wraps
 import logging
-import threading
+import os
 
-app = Flask(__name__)
+# Get the directory where this file is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
 # ===== LOGGING & ERROR HANDLING =====
 logging.basicConfig(level=logging.INFO)
@@ -391,6 +393,5 @@ def comparison():
         return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == '__main__':
-    # Only run Flask app if in main thread (prevents Streamlit conflicts)
-    if threading.current_thread() is threading.main_thread():
-        app.run(debug=False, port=5000)
+    print("Starting Flask app on http://127.0.0.1:5000")
+    app.run(host='127.0.0.1', port=5000, debug=False, threaded=True)
