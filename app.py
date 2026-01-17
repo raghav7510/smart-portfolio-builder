@@ -1,5 +1,10 @@
 import streamlit as st
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+    st.error("⚠️ Matplotlib not available. Please ensure it's installed.")
 import numpy as np
 
 # --------------------------------------------------
@@ -314,13 +319,16 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 st.markdown('<h2>Step 4: Your portfolio mix</h2>', unsafe_allow_html=True)
 st.markdown('<p class="helper">How we\'d suggest spreading your investments.</p>', unsafe_allow_html=True)
 
-fig, ax = plt.subplots(figsize=(5, 5))
-colors_pie = ['#1e40af', '#15803d', '#b45309', '#64748b']
-ax.pie(portfolio.values(), labels=portfolio.keys(), autopct="%1.0f%%", 
-       startangle=90, colors=colors_pie, textprops={'color': 'white', 'weight': 'bold'})
-ax.axis("equal")
-fig.patch.set_facecolor('none')
-st.pyplot(fig, use_container_width=True)
+if MATPLOTLIB_AVAILABLE:
+    fig, ax = plt.subplots(figsize=(5, 5))
+    colors_pie = ['#1e40af', '#15803d', '#b45309', '#64748b']
+    ax.pie(portfolio.values(), labels=portfolio.keys(), autopct="%1.0f%%", 
+           startangle=90, colors=colors_pie, textprops={'color': 'white', 'weight': 'bold'})
+    ax.axis("equal")
+    fig.patch.set_facecolor('none')
+    st.pyplot(fig, use_container_width=True)
+else:
+    st.info("📊 Portfolio visualization not available")
 
 # Asset breakdown
 for asset, pct in portfolio.items():
