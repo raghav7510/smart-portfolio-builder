@@ -1223,6 +1223,20 @@
             const monthly_contribution = parseFloat(document.getElementById('monthly_contribution').value);
             const investment_horizon = parseInt(document.getElementById('investment_horizon').value);
             
+            // Validate inputs
+            if (!income || income <= 0) {
+                showNotification('Please enter valid income', 'error');
+                return;
+            }
+            if (expenses < 0) {
+                showNotification('Expenses cannot be negative', 'error');
+                return;
+            }
+            if (income <= expenses) {
+                showNotification('Income must be greater than expenses', 'error');
+                return;
+            }
+            
             const q1 = parseInt(document.querySelector('input[name="q1"]:checked')?.value || 3);
             const q2 = parseInt(document.querySelector('input[name="q2"]:checked')?.value || 3);
             const q3 = parseInt(document.querySelector('input[name="q3"]:checked')?.value || 3);
