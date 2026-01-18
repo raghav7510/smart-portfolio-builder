@@ -3,1686 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Portfolio Builder PRO</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #3B82F6;
-            --primary-dark: #1E40AF;
-            --primary-light: #93C5FD;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --dark: #0F172A;
-            --dark-secondary: #1E293B;
-            --gray-light: #F1F5F9;
-            --gray: #94A3B8;
-            --text-dark: #0F172A;
-            --text-light: #64748B;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--text-dark);
-            line-height: 1.6;
-            min-height: 100vh;
-            transition: background 0.3s ease;
-        }
-
-        body.dark-mode {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-            color: #F1F5F9;
-        }
-
-        body.dark-mode .card {
-            background: #1E293B;
-            color: #F1F5F9;
-        }
-
-        body.dark-mode input[type="range"] {
-            background: #334155;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-            animation: slideDown 0.6s ease;
-        }
-
-        .header h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            margin-bottom: 1.5rem;
-        }
-
-        /* ===== NAV TABS ===== */
-        .nav-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 3px solid #E2E8F0;
-            overflow-x: auto;
-            animation: slideUp 0.6s ease 0.1s both;
-        }
-
-        .nav-tab {
-            padding: 1rem 1.5rem;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            white-space: nowrap;
-        }
-
-        .nav-tab:hover {
-            color: var(--primary);
-        }
-
-        .nav-tab.active {
-            color: var(--primary);
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), #7C3AED);
-            animation: expandWidth 0.3s ease;
-        }
-
-        /* ===== SECTIONS ===== */
-        .section {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        /* ===== CARDS ===== */
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        }
-
-        .card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-dark);
-        }
-
-        /* ===== FORM ELEMENTS ===== */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #E2E8F0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* ===== SLIDER ===== */
-        .slider-group {
-            margin-bottom: 2rem;
-        }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .slider-label span:last-child {
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #E2E8F0;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        /* ===== METRICS GRID ===== */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .metric-box {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08));
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .metric-box:hover {
-            border-color: var(--primary);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
-            transform: translateY(-4px);
-        }
-
-        .metric-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-light);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ===== BUTTONS ===== */
-        .button {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            color: white;
-            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        /* ===== PROFILE CARD ===== */
-        .profile-card {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
-            border: 3px solid var(--primary);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            animation: slideUp 0.5s ease;
-        }
-
-        .profile-emoji {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .profile-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: var(--text-dark);
-        }
-
-        .profile-desc {
-            color: var(--text-light);
-            font-size: 0.95rem;
-        }
-
-        /* ===== ALLOCATION GRID ===== */
-        .allocation-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .allocation-item {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08));
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .allocation-item:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-        }
-
-        .allocation-name {
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .allocation-percentage {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ===== CHART CONTAINER ===== */
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin-bottom: 2rem;
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        /* ===== GRID 2 COLS ===== */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 2.5rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .card {
-                padding: 1.5rem;
-            }
-        }
-
-        /* ===== ANIMATIONS ===== */
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        @keyframes expandWidth {
-            from {
-                width: 0;
-            }
-            to {
-                width: 100%;
-            }
-        }
-
-        /* ===== LOADING ===== */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #E2E8F0;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* ===== DARK MODE TOGGLE ===== */
-        .theme-toggle {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            background: white;
-            border: 2px solid #E2E8F0;
-            border-radius: 50px;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        /* ===== NOTIFICATION SYSTEM ===== */
-        .notification {
-            position: fixed;
-            top: 5rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            animation: slideDown 0.3s ease;
-            z-index: 999;
-            font-weight: 600;
-            max-width: 400px;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .notification.success {
-            background: #10B981;
-            color: white;
-        }
-
-        .notification.error {
-            background: #EF4444;
-            color: white;
-        }
-
-        .notification.warning {
-            background: #F59E0B;
-            color: white;
-        }
-
-        .notification.info {
-            background: #3B82F6;
-            color: white;
-        }
-
-        .notification.fade-out {
-            animation: slideUp 0.3s ease forwards;
-        }
-
-        @media (max-width: 768px) {
-            .notification {
-                left: 1rem;
-                right: 1rem;
-                max-width: none;
-            }
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        body.dark-mode .theme-toggle {
-            background: #1E293B;
-            border-color: #334155;
-            color: #F1F5F9;
-        }
-
-        /* ===== MODAL ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-            position: relative;
-        }
-
-        body.dark-mode .modal-content {
-            background: #1E293B;
-            color: #F1F5F9;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        /* ===== PROGRESS BAR ===== */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #E2E8F0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), #7C3AED);
-            transition: width 0.3s ease;
-            border-radius: 4px;
-        }
-
-        /* ===== GAUGE ===== */
-        .gauge {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: conic-gradient(#10B981 0% 25%, #F59E0B 25% 50%, #EF4444 50% 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }
-
-        .gauge-inner {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        body.dark-mode .gauge-inner {
-            background: #1E293B;
-        }
-
-        .gauge-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .gauge-label {
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-
-        /* ===== INFO BADGE ===== */
-        .info-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1));
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            margin: 0.5rem 0;
-            cursor: help;
-            transition: all 0.3s ease;
-        }
-
-        .info-badge:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(124, 58, 237, 0.15));
-            transform: translateX(4px);
-        }
-
-        /* ===== TABS WITH ICONS ===== */
-        .tab-content {
-            padding: 0.25rem;
-        }
-
-        /* ===== STAT BOX ===== */
-        .stat-box {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08));
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: left;
-        }
-
-        .stat-box h4 {
-            color: var(--text-light);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .stat-box .value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #7C3AED);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ===== ALERT ===== */
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            animation: slideUp 0.3s ease;
-        }
-
-        .alert-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
-            border-left: 4px solid var(--warning);
-            color: #92400e;
-        }
-
-        .alert-success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
-            border-left: 4px solid var(--success);
-            color: #065f46;
-        }
-
-        body.dark-mode .alert-warning {
-            color: #fcd34d;
-        }
-
-        body.dark-mode .alert-success {
-            color: #86efac;
-        }
-
-        /* ===== RISK PROFILE ===== */
-        .risk-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .risk-option {
-            display: none;
-        }
-
-        .risk-option input[type="radio"] {
-            display: none;
-        }
-
-        .risk-label {
-            display: block;
-            padding: 1rem;
-            border: 2px solid #E2E8F0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .risk-option input[type="radio"]:checked + .risk-label {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1));
-            color: var(--primary);
-        }
-
-        /* ===== SUCCESS MESSAGE ===== */
-        .success-message {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
-            border: 2px solid var(--success);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            color: #047857;
-        }
-    </style>
+    <title>Smart Portfolio Builder - Investment Planning Made Easy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <!-- THEME TOGGLE -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
-
     <div class="container">
-        <!-- HEADER -->
-        <div class="header">
-            <h1>📊 Smart Portfolio Builder</h1>
-            <p>Build your investment strategy in minutes • Data-driven • Professional-grade</p>
-        </div>
-
-        <!-- NAV TABS -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('home')">🏠 Home</button>
-            <button class="nav-tab" onclick="showTab('builder')">🔨 Portfolio Builder</button>
-            <button class="nav-tab" onclick="showTab('tools')">🛠️ Tools & Calculators</button>
-            <button class="nav-tab" onclick="showTab('results')">📈 Results</button>
-        </div>
-
-        <!-- TAB: HOME -->
-        <div id="home" class="section active">
-            <div class="card">
-                <h2>Welcome to Smart Portfolio Builder</h2>
-                <p style="margin-bottom: 1.5rem; color: var(--text-light); line-height: 1.8;">
-                    Create a personalized investment portfolio in 4 simple steps. Our intelligent system will:
-                </p>
-                <ul style="margin-bottom: 2rem; margin-left: 2rem; color: var(--text-light);">
-                    <li style="margin-bottom: 0.5rem;">Analyze your financial situation</li>
-                    <li style="margin-bottom: 0.5rem;">Assess your risk profile with 5 key questions</li>
-                    <li style="margin-bottom: 0.5rem;">Create optimized portfolio allocation</li>
-                    <li style="margin-bottom: 0.5rem;">Project your wealth growth over 30 years</li>
-                </ul>
-                <button class="button btn-primary" onclick="showTab('builder')">Get Started →</button>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1 class="logo">💰 Smart Portfolio Builder</h1>
+                    <p class="tagline">Your Personal Investment Advisor</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">🌙</button>
             </div>
+        </header>
 
-            <div class="grid-2">
-                <div class="card">
-                    <h2>💡 What is Portfolio Allocation?</h2>
-                    <p style="color: var(--text-light); line-height: 1.8;">
-                        Portfolio allocation is dividing your investments across different asset classes (stocks, bonds, gold, cash) 
-                        to balance risk and returns based on your goals and risk tolerance.
-                    </p>
-                </div>
-                <div class="card">
-                    <h2>⚖️ Why Rebalancing Matters</h2>
-                    <p style="color: var(--text-light); line-height: 1.8;">
-                        Regular rebalancing ensures your portfolio stays aligned with your goals. As assets grow at different rates, 
-                        rebalancing brings you back to your target allocation.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: PORTFOLIO BUILDER -->
-        <div id="builder" class="section">
-            <div class="card">
-                <h2>Step 1: Financial Analysis</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                    <div class="form-group">
-                        <label>Monthly Income (₹)</label>
-                        <input type="number" id="income" value="50000" min="0" oninput="updateMetrics()">
-                    </div>
-                    <div class="form-group">
-                        <label>Monthly Expenses (₹)</label>
-                        <input type="number" id="expenses" value="30000" min="0" oninput="updateMetrics()">
-                    </div>
-                    <div class="form-group">
-                        <label>Initial Investment (₹)</label>
-                        <input type="number" id="initial_investment" value="100000" min="1000" oninput="updateMetrics()">
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                    <div class="form-group">
-                        <label>Monthly Contribution (₹)</label>
-                        <input type="number" id="monthly_contribution" value="5000" min="0" oninput="updateMetrics()">
-                    </div>
-                    <div class="form-group">
-                        <label>Investment Horizon (Years)</label>
-                        <input type="number" id="investment_horizon" value="10" min="1" max="40" oninput="updateMetrics()">
-                    </div>
-                </div>
-
-                <!-- LIVE METRICS -->
-                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.08)); border: 2px solid #D1FAE5; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-dark);">💡 Real-time Financial Snapshot</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div class="stat-box">
-                            <h4>Monthly Surplus</h4>
-                            <div class="value" id="surplus-display">₹20,000</div>
-                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;" id="surplus-status">✅ Good savings rate</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4>Emergency Fund Target</h4>
-                            <div class="value" id="emergency-display">₹1.8L</div>
-                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">6 months of expenses</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4>Total Investable</h4>
-                            <div class="value" id="investable-display">₹2.2L</div>
-                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">50% of annual savings</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Step 2: Risk Assessment Quiz</h2>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem;">Answer these 5 questions to determine your investor profile</p>
-
-                <div class="form-group">
-                    <label>⏱️ How long can money stay invested?</label>
-                    <div class="risk-options">
-                        <div class="risk-option">
-                            <input type="radio" id="q1-1" name="q1" value="1">
-                            <label for="q1-1" class="risk-label">&lt; 1 year</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q1-2" name="q1" value="2">
-                            <label for="q1-2" class="risk-label">1-3 years</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q1-3" name="q1" value="3">
-                            <label for="q1-3" class="risk-label">3-5 years</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q1-4" name="q1" value="4">
-                            <label for="q1-4" class="risk-label">5-10 years</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q1-5" name="q1" value="5" checked>
-                            <label for="q1-5" class="risk-label">10+ years</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>📉 Market drops 20%, you:</label>
-                    <div class="risk-options">
-                        <div class="risk-option">
-                            <input type="radio" id="q2-1" name="q2" value="1">
-                            <label for="q2-1" class="risk-label">Panic & sell</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q2-2" name="q2" value="2">
-                            <label for="q2-2" class="risk-label">Hold tight</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q2-3" name="q2" value="3">
-                            <label for="q2-3" class="risk-label">Stay calm</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q2-4" name="q2" value="4" checked>
-                            <label for="q2-4" class="risk-label">Buy more</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>💼 Income stability:</label>
-                    <div class="risk-options">
-                        <div class="risk-option">
-                            <input type="radio" id="q3-1" name="q3" value="1">
-                            <label for="q3-1" class="risk-label">Very unstable</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q3-2" name="q3" value="2">
-                            <label for="q3-2" class="risk-label">Somewhat stable</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q3-3" name="q3" value="3">
-                            <label for="q3-3" class="risk-label">Stable</label>
-                        </div>
-                        <div class="risk-option">
-                            <input type="radio" id="q3-4" name="q3" value="4" checked>
-                            <label for="q3-4" class="risk-label">Very stable</label>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="button btn-primary" onclick="calculatePortfolio()" style="width: 100%; margin-top: 1rem;">
-                    Calculate Portfolio
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs Navigation -->
+            <nav class="tabs-nav">
+                <button class="tab-btn active" data-tab="portfolio">
+                    <span class="icon">💼</span>
+                    <span>Portfolio</span>
                 </button>
-            </div>
-        </div>
+                <button class="tab-btn" data-tab="sip">
+                    <span class="icon">🎯</span>
+                    <span>SIP</span>
+                </button>
+                <button class="tab-btn" data-tab="comparison">
+                    <span class="icon">⚖️</span>
+                    <span>Compare</span>
+                </button>
+            </nav>
 
-        <!-- TAB: TOOLS -->
-        <div id="tools" class="section">
-            <div class="card">
-                <h2>SIP Calculator (Systematic Investment Plan)</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="form-group">
-                        <label>Monthly SIP Amount (₹)</label>
-                        <input type="number" id="sip_amount" value="5000" min="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Expected Annual Return (%)</label>
-                        <input type="number" id="sip_return" value="10" min="1" max="50" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Investment Period (Years)</label>
-                        <input type="number" id="sip_years" value="10" min="1" max="40">
-                    </div>
-                </div>
-                <button class="button btn-primary" onclick="calculateSIP()" style="width: 100%;">Calculate SIP Returns</button>
-                <div id="sip-results" class="hidden" style="margin-top: 2rem;">
-                    <div class="metrics-grid">
-                        <div class="metric-box">
-                            <div class="metric-label">Total Invested</div>
-                            <div class="metric-value" id="sip-invested">₹0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Final Value</div>
-                            <div class="metric-value" id="sip-final">₹0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Total Gain</div>
-                            <div class="metric-value" id="sip-gain">₹0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Gain %</div>
-                            <div class="metric-value" id="sip-gain-pct">0%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Portfolio Calculator Tab -->
+            <div class="tab-content active" id="portfolio">
+                <div class="tab-grid">
+                    <!-- Input Panel -->
+                    <div class="input-panel">
+                        <h2>Portfolio Calculator</h2>
+                        
+                        <form id="portfolioForm" class="form">
+                            <div class="form-section">
+                                <h3>Financial Details</h3>
+                                
+                                <div class="form-group">
+                                    <label for="income">Monthly Income (₹)</label>
+                                    <input type="number" id="income" name="income" value="50000" min="1000" step="1000">
+                                    <span class="slider-value" id="incomeValue">50,000</span>
+                                </div>
 
-            <div class="card">
-                <h2>Lump Sum vs SIP Comparison</h2>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem;">Compare investing a lump sum vs investing via monthly SIP</p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="form-group">
-                        <label>Total Investment Amount (₹)</label>
-                        <input type="number" id="comp_amount" value="100000" min="1000">
-                    </div>
-                    <div class="form-group">
-                        <label>Expected Annual Return (%)</label>
-                        <input type="number" id="comp_return" value="10" min="1" max="50" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Time Period (Years)</label>
-                        <input type="number" id="comp_years" value="10" min="1" max="40">
-                    </div>
-                </div>
-                <button class="button btn-primary" onclick="calculateComparison()" style="width: 100%;">Compare Returns</button>
-                <div id="comparison-results" class="hidden" style="margin-top: 2rem;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1)); border: 2px solid var(--primary); border-radius: 12px; padding: 1.5rem;">
-                            <h3 style="margin-bottom: 1rem;">Lump Sum</h3>
-                            <div class="metric-box" style="background: transparent; border: none; padding: 0; margin-bottom: 1rem;">
-                                <div class="metric-label">Final Value</div>
-                                <div class="metric-value" id="comp-lump-final">₹0</div>
+                                <div class="form-group">
+                                    <label for="expenses">Monthly Expenses (₹)</label>
+                                    <input type="number" id="expenses" name="expenses" value="30000" min="0" step="1000">
+                                    <span class="slider-value" id="expensesValue">30,000</span>
+                                </div>
+
+                                <div class="savings-indicator">
+                                    <span>Monthly Savings:</span>
+                                    <strong id="monthlySavings">₹ 20,000</strong>
+                                </div>
                             </div>
-                            <div class="metric-box" style="background: transparent; border: none; padding: 0;">
-                                <div class="metric-label">Gain</div>
-                                <div class="metric-value" id="comp-lump-gain">₹0</div>
+
+                            <div class="form-section">
+                                <h3>Investment Details</h3>
+                                
+                                <div class="form-group">
+                                    <label for="initialInvestment">Initial Investment (₹)</label>
+                                    <input type="number" id="initialInvestment" name="initialInvestment" value="100000" min="0" step="10000">
+                                    <span class="slider-value" id="initialValue">1,00,000</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="monthlyContribution">Monthly Contribution (₹)</label>
+                                    <input type="number" id="monthlyContribution" name="monthlyContribution" value="5000" min="0" step="1000">
+                                    <span class="slider-value" id="contributionValue">5,000</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="horizon">Investment Horizon (Years)</label>
+                                    <input type="range" id="horizon" name="horizon" value="10" min="1" max="50" step="1">
+                                    <span class="range-value" id="horizonValue">10 years</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="riskScore">Risk Score (0 = Conservative, 20 = Aggressive)</label>
+                                    <input type="range" id="riskScore" name="riskScore" value="10" min="0" max="20" step="1">
+                                    <div class="risk-label" id="riskLabel">⚖️ Balanced</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary">
+                                <span>📊 Calculate Portfolio</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Results Panel -->
+                    <div class="results-panel">
+                        <div id="portfolioResults" class="results" style="display: none;">
+                            <!-- Profile Card -->
+                            <div class="profile-card" id="profileCard">
+                                <div class="profile-header">
+                                    <div class="profile-icon" id="profileIcon">🛡️</div>
+                                    <div class="profile-info">
+                                        <h3 id="profileTitle">Capital Protector</h3>
+                                        <p id="profileName">Conservative</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Metrics Grid -->
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <span class="metric-label">Monthly Savings</span>
+                                    <span class="metric-value" id="metric1">₹ 20,000</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">Annual Savings</span>
+                                    <span class="metric-value" id="metric2">₹ 2,40,000</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">Emergency Fund</span>
+                                    <span class="metric-value" id="metric3">₹ 1,80,000</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">Total Investable</span>
+                                    <span class="metric-value" id="metric4">₹ 1,20,000</span>
+                                </div>
+                            </div>
+
+                            <!-- Allocation Chart -->
+                            <div class="chart-container">
+                                <h4>Portfolio Allocation</h4>
+                                <div style="position: relative; width: 100%; height: 300px;">
+                                    <canvas id="allocationChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Scenarios -->
+                            <div class="scenarios-section">
+                                <h4>3 Scenarios - Projected Values</h4>
+                                <div class="scenarios-grid">
+                                    <div class="scenario-card worst">
+                                        <div class="scenario-label">Worst Case</div>
+                                        <div class="scenario-value" id="worstValue">₹ 0</div>
+                                        <div class="scenario-gain" id="worstGain">₹ 0 gain</div>
+                                    </div>
+                                    <div class="scenario-card expected">
+                                        <div class="scenario-label">Expected</div>
+                                        <div class="scenario-value" id="expectedValue">₹ 0</div>
+                                        <div class="scenario-gain" id="expectedGain">₹ 0 gain</div>
+                                    </div>
+                                    <div class="scenario-card best">
+                                        <div class="scenario-label">Best Case</div>
+                                        <div class="scenario-value" id="bestValue">₹ 0</div>
+                                        <div class="scenario-gain" id="bestGain">₹ 0 gain</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Projection Chart -->
+                            <div class="chart-container">
+                                <h4>Wealth Projection Over Time</h4>
+                                <div style="position: relative; width: 100%; height: 300px;">
+                                    <canvas id="projectionChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Insights -->
+                            <div class="insights-section">
+                                <h4>Key Insights</h4>
+                                <div class="insights-grid" id="insightsGrid"></div>
                             </div>
                         </div>
-                        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1)); border: 2px solid var(--success); border-radius: 12px; padding: 1.5rem;">
-                            <h3 style="margin-bottom: 1rem;">SIP</h3>
-                            <div class="metric-box" style="background: transparent; border: none; padding: 0; margin-bottom: 1rem;">
-                                <div class="metric-label">Final Value</div>
-                                <div class="metric-value" id="comp-sip-final">₹0</div>
+
+                        <div id="portfolioEmpty" class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <p>Fill the form and click "Calculate Portfolio" to see your investment analysis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIP Calculator Tab -->
+            <div class="tab-content" id="sip">
+                <div class="tab-grid">
+                    <div class="input-panel">
+                        <h2>SIP Calculator</h2>
+                        <p class="description">Calculate your Systematic Investment Plan returns</p>
+
+                        <form id="sipForm" class="form">
+                            <div class="form-section">
+                                <div class="form-group">
+                                    <label for="sipAmount">Monthly SIP Amount (₹)</label>
+                                    <input type="number" id="sipAmount" name="sipAmount" value="5000" min="100" step="100">
+                                    <span class="slider-value" id="sipAmountValue">5,000</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="sipReturn">Expected Annual Return (%)</label>
+                                    <input type="range" id="sipReturn" name="sipReturn" value="10" min="0" max="50" step="0.5">
+                                    <span class="range-value" id="sipReturnValue">10%</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="sipYears">Investment Period (Years)</label>
+                                    <input type="range" id="sipYears" name="sipYears" value="10" min="1" max="50" step="1">
+                                    <span class="range-value" id="sipYearsValue">10 years</span>
+                                </div>
                             </div>
-                            <div class="metric-box" style="background: transparent; border: none; padding: 0;">
-                                <div class="metric-label">Gain</div>
-                                <div class="metric-value" id="comp-sip-gain">₹0</div>
+
+                            <button type="submit" class="btn-primary">
+                                <span>🧮 Calculate SIP</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="results-panel">
+                        <div id="sipResults" class="results" style="display: none;">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <span class="metric-label">Total Invested</span>
+                                    <span class="metric-value" id="sipInvested">₹ 0</span>
+                                </div>
+                                <div class="metric-card highlight">
+                                    <span class="metric-label">Final Value</span>
+                                    <span class="metric-value" id="sipFinal">₹ 0</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">Total Gain</span>
+                                    <span class="metric-value" id="sipGain">₹ 0</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">Gain %</span>
+                                    <span class="metric-value" id="sipGainPct">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="chart-container">
+                                <h4>SIP Growth Over Time</h4>
+                                <div style="position: relative; width: 100%; height: 300px;">
+                                    <canvas id="sipChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="highlight-box">
+                                <h4>Power of Compounding</h4>
+                                <p>Your investments grow exponentially through the magic of compounding. The longer you invest, the greater the returns!</p>
+                                <div class="compounding-value" id="compoundingValue">₹ 0</div>
                             </div>
                         </div>
-                    </div>
-                    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)); border: 2px solid var(--warning); border-radius: 12px; padding: 1.5rem; text-align: center;">
-                        <p style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">SIP Advantage</p>
-                        <p style="font-size: 1.8rem; font-weight: 800; color: var(--warning);" id="comp-advantage">₹0</p>
-                        <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.5rem;">SIP tends to perform better with rupee cost averaging</p>
-                    </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <h2>Inflation Impact Calculator</h2>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem;">See how inflation affects your real returns</p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="form-group">
-                        <label>Investment Amount (₹)</label>
-                        <input type="number" id="inflation_amount" value="100000" min="1000">
-                    </div>
-                    <div class="form-group">
-                        <label>Expected Return (%)</label>
-                        <input type="number" id="inflation_return" value="10" min="1" max="50" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Inflation Rate (%)</label>
-                        <input type="number" id="inflation_rate" value="6" min="0" max="20" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Time Period (Years)</label>
-                        <input type="number" id="inflation_years" value="10" min="1" max="40">
-                    </div>
-                </div>
-                <button class="button btn-primary" onclick="calculateInflation()" style="width: 100%;">Calculate Real Returns</button>
-                <div id="inflation-results" class="hidden" style="margin-top: 2rem;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                        <div class="metric-box">
-                            <div class="metric-label">Nominal Value</div>
-                            <div class="metric-value" id="inflation-nominal">₹0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Real Value (Inflation-Adjusted)</div>
-                            <div class="metric-value" id="inflation-real">₹0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Purchasing Power Loss</div>
-                            <div class="metric-value" id="inflation-loss">₹0</div>
+                        <div id="sipEmpty" class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <p>Enter your SIP details and click "Calculate SIP"</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card">
-                <h2>Retirement Planning Calculator</h2>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem;">Plan for a comfortable retirement</p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="form-group">
-                        <label>Current Age</label>
-                        <input type="number" id="retire_age" value="30" min="18" max="65">
+            <!-- Comparison Tab -->
+            <div class="tab-content" id="comparison">
+                <div class="tab-grid">
+                    <div class="input-panel">
+                        <h2>Lump Sum vs SIP</h2>
+                        <p class="description">Compare investment strategies</p>
+
+                        <form id="comparisonForm" class="form">
+                            <div class="form-section">
+                                <div class="form-group">
+                                    <label for="compAmount">Total Amount (₹)</label>
+                                    <input type="number" id="compAmount" name="compAmount" value="100000" min="1000" step="10000">
+                                    <span class="slider-value" id="compAmountValue">1,00,000</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="compReturn">Expected Annual Return (%)</label>
+                                    <input type="range" id="compReturn" name="compReturn" value="10" min="0" max="50" step="0.5">
+                                    <span class="range-value" id="compReturnValue">10%</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="compYears">Investment Period (Years)</label>
+                                    <input type="range" id="compYears" name="compYears" value="10" min="1" max="50" step="1">
+                                    <span class="range-value" id="compYearsValue">10 years</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary">
+                                <span>⚖️ Compare</span>
+                            </button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label>Retirement Age</label>
-                        <input type="number" id="retire_target" value="60" min="30" max="80">
-                    </div>
-                    <div class="form-group">
-                        <label>Monthly Expenses Today (₹)</label>
-                        <input type="number" id="retire_expenses" value="30000" min="1000">
-                    </div>
-                    <div class="form-group">
-                        <label>Current Savings (₹)</label>
-                        <input type="number" id="retire_savings" value="100000" min="0">
-                    </div>
-                </div>
-                <button class="button btn-primary" onclick="calculateRetirement()" style="width: 100%;">Calculate Retirement Corpus</button>
-                <div id="retirement-results" class="hidden" style="margin-top: 2rem;">
-                    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08)); border: 2px solid #E2E8F0; border-radius: 12px; padding: 2rem; text-align: center;">
-                        <p style="color: var(--text-light); margin-bottom: 1rem;">You need approximately</p>
-                        <p style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;" id="retire-corpus">₹0</p>
-                        <p style="color: var(--text-light); margin-bottom: 1rem;">in your retirement corpus</p>
-                        <p style="font-size: 1.1rem; font-weight: 600; color: var(--success);" id="retire-status">Ready for retirement! 🎉</p>
+
+                    <div class="results-panel">
+                        <div id="comparisonResults" class="results" style="display: none;">
+                            <div class="comparison-cards">
+                                <div class="comparison-card lump-sum">
+                                    <h4>💰 Lump Sum</h4>
+                                    <div class="comp-metric">
+                                        <span>Invested</span>
+                                        <strong id="lumpInvested">₹ 0</strong>
+                                    </div>
+                                    <div class="comp-metric">
+                                        <span>Final Value</span>
+                                        <strong id="lumpFinal">₹ 0</strong>
+                                    </div>
+                                    <div class="comp-metric">
+                                        <span>Gain</span>
+                                        <strong id="lumpGain">₹ 0</strong>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-card sip-invest">
+                                    <h4>📅 SIP</h4>
+                                    <div class="comp-metric">
+                                        <span>Invested</span>
+                                        <strong id="sipInvested2">₹ 0</strong>
+                                    </div>
+                                    <div class="comp-metric">
+                                        <span>Final Value</span>
+                                        <strong id="sipFinal2">₹ 0</strong>
+                                    </div>
+                                    <div class="comp-metric">
+                                        <span>Gain</span>
+                                        <strong id="sipGain2">₹ 0</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="advantage-box" id="advantageBox">
+                                <h4 id="advantageTitle">SIP Wins!</h4>
+                                <p id="advantageAmount">SIP is better by ₹ 0</p>
+                                <p class="advantage-reason" id="advantageReason">SIP helps reduce timing risk and benefits from rupee cost averaging</p>
+                            </div>
+
+                            <div class="chart-container">
+                                <h4>Final Value Comparison</h4>
+                                <div style="position: relative; width: 100%; height: 300px;">
+                                    <canvas id="comparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="comparisonEmpty" class="empty-state">
+                            <div class="empty-icon">⚖️</div>
+                            <p>Enter your comparison details and click "Compare"</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- ASSET EDUCATION MODAL -->
-        <div id="assetModal" class="modal" onclick="closeAssetModal(event)">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <button class="modal-close" onclick="closeAssetModal()">✕</button>
-                <div id="assetModalContent"></div>
-            </div>
-        </div>
-
-        <!-- TAB: RESULTS -->
-        <div id="results" class="section">
-            <div id="results-container"></div>
-        </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Smart Portfolio Builder © 2026 | Developed by Raghav Dhanotiya</p>
+            <p style="font-size: 0.85em; margin-top: 5px; opacity: 0.8;">
+                📧 raghav74dhanotiya@gmail.com | 📱 +91 9109657983
+            </p>
+        </footer>
     </div>
 
-    <script>
-        let currentData = null;
-
-        // ===== NOTIFICATION SYSTEM =====
-        function showNotification(message, type = 'info', duration = 4000) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            
-            const icons = {
-                success: '✓',
-                error: '✕',
-                warning: '⚠',
-                info: 'ℹ'
-            };
-            
-            notification.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('fade-out');
-                setTimeout(() => notification.remove(), 300);
-            }, duration);
-        }
-
-        // ===== THEME TOGGLE =====
-        function toggleTheme() {
-            const body = document.body;
-            const toggle = document.querySelector('.theme-toggle');
-            body.classList.toggle('dark-mode');
-            toggle.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
-        }
-
-        // Load saved theme
-        if (localStorage.getItem('theme') === 'dark') {
-            toggleTheme();
-        }
-
-        // Update metrics in real-time
-        function updateMetrics() {
-            const income = parseFloat(document.getElementById('income').value) || 0;
-            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
-            const surplus = income - expenses;
-            const emergency = expenses * 6;
-            const investable = (surplus * 12) * 0.5;
-
-            document.getElementById('surplus-display').textContent = formatCurrency(surplus);
-            document.getElementById('emergency-display').textContent = formatCurrency(emergency);
-            document.getElementById('investable-display').textContent = formatCurrency(investable);
-
-            // Update status
-            const status = surplus > expenses * 0.5 ? '✅ Excellent savings rate' : '⚠️ Consider reducing expenses';
-            document.getElementById('surplus-status').textContent = status;
-        }
-
-        // Initialize metrics on page load
-        updateMetrics();
-
-        // Tab Navigation
-        function showTab(tabName) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Format Currency
-        function formatCurrency(value) {
-            return '₹' + Math.round(value).toLocaleString('en-IN');
-        }
-
-        // Calculate Portfolio
-        async function calculatePortfolio() {
-            const income = parseFloat(document.getElementById('income').value);
-            const expenses = parseFloat(document.getElementById('expenses').value);
-            const initial_investment = parseFloat(document.getElementById('initial_investment').value);
-            const monthly_contribution = parseFloat(document.getElementById('monthly_contribution').value);
-            const investment_horizon = parseInt(document.getElementById('investment_horizon').value);
-            
-            // Validate inputs
-            if (!income || income <= 0) {
-                showNotification('Please enter valid income', 'error');
-                return;
-            }
-            if (expenses < 0) {
-                showNotification('Expenses cannot be negative', 'error');
-                return;
-            }
-            if (income <= expenses) {
-                showNotification('Income must be greater than expenses', 'error');
-                return;
-            }
-            
-            const q1 = parseInt(document.querySelector('input[name="q1"]:checked')?.value || 3);
-            const q2 = parseInt(document.querySelector('input[name="q2"]:checked')?.value || 3);
-            const q3 = parseInt(document.querySelector('input[name="q3"]:checked')?.value || 3);
-            const risk_score = q1 + q2 + q3;
-
-            try {
-                const response = await axios.post('/api/calculate', {
-                    income,
-                    expenses,
-                    initial_investment,
-                    monthly_contribution,
-                    investment_horizon,
-                    risk_score
-                });
-
-                if (!response.data.success) {
-                    showNotification(response.data.error || 'Calculation failed', 'error');
-                    return;
-                }
-
-                currentData = response.data;
-                displayResults(response.data);
-                showNotification('Portfolio calculated successfully! 📊', 'success');
-                showTab('results');
-            } catch (error) {
-                if (error.response?.data?.error) {
-                    showNotification(error.response.data.error, 'error');
-                } else if (error.response?.status === 400) {
-                    showNotification('Invalid input values. Please check your entries.', 'error');
-                } else {
-                    showNotification('Error calculating portfolio. Please try again.', 'error');
-                }
-                console.error('Portfolio calculation error:', error);
-            }
-        }
-
-        // Display Results
-        function displayResults(data) {
-            const container = document.getElementById('results-container');
-            const metrics = data.metrics;
-            const profile = data.profile;
-            const portfolio = data.portfolio;
-            const scenarios = data.scenarios;
-
-            let html = `
-                <div class="success-message">
-                    ✅ Portfolio calculated successfully! Your personalized investment plan is ready.
-                </div>
-
-                <div class="card">
-                    <h2>Your Financial Snapshot</h2>
-                    <div class="metrics-grid">
-                        <div class="metric-box">
-                            <div class="metric-label">Monthly Savings</div>
-                            <div class="metric-value">${formatCurrency(metrics.monthly_savings)}</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Annual Savings</div>
-                            <div class="metric-value">${formatCurrency(metrics.annual_savings)}</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Emergency Fund</div>
-                            <div class="metric-value">${formatCurrency(metrics.emergency_fund)}</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">Investable Amount</div>
-                            <div class="metric-value">${formatCurrency(metrics.total_investable)}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>Your Investor Profile</h2>
-                    <div class="profile-card">
-                        <div class="profile-emoji">${profile.emoji}</div>
-                        <div class="profile-title">${profile.title}</div>
-                        <div class="profile-desc">${profile.profile} Investor</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>Portfolio Allocation (${profile.profile})</h2>
-                    <div class="allocation-grid">
-            `;
-
-            const colors = {
-                'Equity': '#3B82F6',
-                'Debt': '#10B981',
-                'Gold': '#F59E0B',
-                'Cash': '#6B7280'
-            };
-
-            for (const [asset, percentage] of Object.entries(portfolio)) {
-                html += `
-                    <div class="allocation-item" onclick="showAssetModal('${asset}')" style="cursor: pointer;">
-                        <div class="allocation-name">${asset}</div>
-                        <div class="allocation-percentage">${percentage}%</div>
-                        <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">Click to learn more →</div>
-                    </div>
-                `;
-            }
-
-            html += `
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="allocation-chart"></canvas>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>Wealth Projection (3 Scenarios)</h2>
-                    <div class="grid-2">
-            `;
-
-            const scenarioNames = {
-                'worst': '🔴 Challenging Scenario (20th percentile)',
-                'expected': '📊 Expected Scenario (50th percentile)',
-                'best': '✨ Favorable Scenario (80th percentile)'
-            };
-
-            for (const [scenario, name] of Object.entries(scenarioNames)) {
-                const data = scenarios[scenario];
-                html += `
-                    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08)); border: 2px solid #E2E8F0; border-radius: 12px; padding: 1.5rem;">
-                        <h3 style="margin-bottom: 1rem;">${name}</h3>
-                        <div style="margin-bottom: 1rem;">
-                            <div style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Annual Return</div>
-                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${data.annual_return}%</div>
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <div style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Final Value</div>
-                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${formatCurrency(data.final_value)}</div>
-                        </div>
-                        <div>
-                            <div style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Gain</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success);">${formatCurrency(data.gain)}</div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            html += `
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="projection-chart"></canvas>
-                    </div>
-                </div>
-            `;
-
-            container.innerHTML = html;
-
-            // Draw Charts
-            setTimeout(() => {
-                drawAllocationChart(portfolio);
-                drawProjectionChart(scenarios);
-            }, 100);
-        }
-
-        // Draw Allocation Chart
-        function drawAllocationChart(portfolio) {
-            const ctx = document.getElementById('allocation-chart').getContext('2d');
-            const colors = ['#3B82F6', '#10B981', '#F59E0B', '#6B7280'];
-            const labels = Object.keys(portfolio);
-            const data = Object.values(portfolio);
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        borderColor: 'white',
-                        borderWidth: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 14, weight: 'bold' }, padding: 20 }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Draw Projection Chart
-        function drawProjectionChart(scenarios) {
-            const ctx = document.getElementById('projection-chart').getContext('2d');
-            const worst = scenarios.worst.projections;
-            const expected = scenarios.expected.projections;
-            const best = scenarios.best.projections;
-
-            const labels = expected.map(p => p.year.toFixed(1) + 'y');
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Challenging',
-                            data: worst.map(p => p.value),
-                            borderColor: '#EF4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            tension: 0.4,
-                            fill: false,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'Expected',
-                            data: expected.map(p => p.value),
-                            borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'Favorable',
-                            data: best.map(p => p.value),
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.4,
-                            fill: false,
-                            borderWidth: 3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { font: { size: 14, weight: 'bold' }, padding: 20 }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: v => '₹' + (v / 100000).toFixed(1) + 'L' }
-                        }
-                    }
-                }
-            });
-        }
-
-        // SIP Calculator
-        async function calculateSIP() {
-            const monthly_sip = parseFloat(document.getElementById('sip_amount').value);
-            const annual_return = parseFloat(document.getElementById('sip_return').value) / 100;
-            const years = parseInt(document.getElementById('sip_years').value);
-
-            try {
-                const response = await axios.post('/api/sip-calculator', {
-                    monthly_sip,
-                    annual_return,
-                    years
-                });
-
-                if (!response.data.success) {
-                    showNotification(response.data.error || 'SIP calculation failed', 'error');
-                    return;
-                }
-
-                const data = response.data;
-                document.getElementById('sip-results').classList.remove('hidden');
-                document.getElementById('sip-invested').textContent = formatCurrency(data.total_invested);
-                document.getElementById('sip-final').textContent = formatCurrency(data.final_value);
-                document.getElementById('sip-gain').textContent = formatCurrency(data.gain);
-                document.getElementById('sip-gain-pct').textContent = data.gain_percentage.toFixed(2) + '%';
-                showNotification('SIP calculation complete! 💰', 'success');
-            } catch (error) {
-                if (error.response?.data?.error) {
-                    showNotification(error.response.data.error, 'error');
-                } else {
-                    showNotification('Error calculating SIP. Please check your inputs.', 'error');
-                }
-                console.error('SIP calculation error:', error);
-            }
-        }
-
-        // Comparison Calculator
-        async function calculateComparison() {
-            const amount = parseFloat(document.getElementById('comp_amount').value);
-            const annual_return = parseFloat(document.getElementById('comp_return').value) / 100;
-            const years = parseInt(document.getElementById('comp_years').value);
-
-            try {
-                const response = await axios.post('/api/comparison', {
-                    amount,
-                    annual_return,
-                    years
-                });
-
-                if (!response.data.success) {
-                    showNotification(response.data.error || 'Comparison failed', 'error');
-                    return;
-                }
-
-                const data = response.data;
-                document.getElementById('comparison-results').classList.remove('hidden');
-                document.getElementById('comp-lump-final').textContent = formatCurrency(data.lump_sum.final);
-                document.getElementById('comp-lump-gain').textContent = formatCurrency(data.lump_sum.gain);
-                document.getElementById('comp-sip-final').textContent = formatCurrency(data.sip.final);
-                document.getElementById('comp-sip-gain').textContent = formatCurrency(data.sip.gain);
-                document.getElementById('comp-advantage').textContent = formatCurrency(data.sip_advantage);
-                showNotification(`${data.better_strategy} strategy is better for you! ✓`, 'success');
-            } catch (error) {
-                if (error.response?.data?.error) {
-                    showNotification(error.response.data.error, 'error');
-                } else {
-                    showNotification('Error calculating comparison. Please check your inputs.', 'error');
-                }
-                console.error('Comparison calculation error:', error);
-            }
-        }
-
-        // ===== NEW CALCULATORS =====
-
-        // Inflation Calculator
-        async function calculateInflation() {
-            const amount = parseFloat(document.getElementById('inflation_amount').value);
-            const return_rate = parseFloat(document.getElementById('inflation_return').value) / 100;
-            const inflation = parseFloat(document.getElementById('inflation_rate').value) / 100;
-            const years = parseInt(document.getElementById('inflation_years').value);
-
-            // Nominal value
-            const nominal = amount * Math.pow(1 + return_rate, years);
-            
-            // Real value (adjusted for inflation)
-            const real = amount * Math.pow(1 + return_rate - inflation, years);
-            
-            // Purchasing power loss
-            const loss = nominal - real;
-
-            document.getElementById('inflation-results').classList.remove('hidden');
-            document.getElementById('inflation-nominal').textContent = formatCurrency(nominal);
-            document.getElementById('inflation-real').textContent = formatCurrency(real);
-            document.getElementById('inflation-loss').textContent = formatCurrency(loss);
-        }
-
-        // Retirement Calculator
-        async function calculateRetirement() {
-            const currentAge = parseInt(document.getElementById('retire_age').value);
-            const retirementAge = parseInt(document.getElementById('retire_target').value);
-            const monthlyExpenses = parseFloat(document.getElementById('retire_expenses').value);
-            const currentSavings = parseFloat(document.getElementById('retire_savings').value);
-            
-            const yearsToRetirement = retirementAge - currentAge;
-            const annualExpenses = monthlyExpenses * 12;
-            
-            // Assume 25x annual expenses rule (for 4% withdrawal rate)
-            const corpusNeeded = annualExpenses * 25;
-            
-            // Project current savings growth at 8% annual return
-            const projectedSavings = currentSavings * Math.pow(1.08, yearsToRetirement);
-            
-            // Gap
-            const gap = Math.max(0, corpusNeeded - projectedSavings);
-            
-            const status = projectedSavings >= corpusNeeded 
-                ? '✅ You\'re on track for retirement! 🎉' 
-                : `⚠️ Gap: ${formatCurrency(gap)} | Need more SIP`;
-
-            document.getElementById('retirement-results').classList.remove('hidden');
-            document.getElementById('retire-corpus').textContent = formatCurrency(corpusNeeded);
-            document.getElementById('retire-status').textContent = status;
-        }
-
-        // Asset Modal
-        function showAssetModal(asset) {
-            const assets = {
-                'Equity': {
-                    emoji: '📈',
-                    description: 'Stocks & Equity Mutual Funds',
-                    details: 'Represents ownership in companies. Historically best returns over 5+ years.',
-                    risk: 'High',
-                    returns: '8-16% annually',
-                    examples: '• NSE/BSE stocks\n• Equity mutual funds\n• ETFs\n• Index funds',
-                    tips: 'Best for long-term growth. Invest lump sum for market downturns.'
-                },
-                'Debt': {
-                    emoji: '💰',
-                    description: 'Bonds & Fixed Income',
-                    details: 'Lending money to earn regular interest. Safe and predictable.',
-                    risk: 'Low',
-                    returns: '5-8% annually',
-                    examples: '• Government securities\n• Corporate bonds\n• Fixed deposits\n• PPF',
-                    tips: 'Ideal for stability. Great for risk-averse investors.'
-                },
-                'Gold': {
-                    emoji: '✨',
-                    description: 'Precious Metals',
-                    details: 'Hedge against inflation and political uncertainty. Limited returns.',
-                    risk: 'Moderate',
-                    returns: '3-9% annually',
-                    examples: '• Gold ETF\n• Sovereign Gold Bonds\n• Physical gold',
-                    tips: '10-15% allocation recommended. Diversification benefit.'
-                },
-                'Cash': {
-                    emoji: '💵',
-                    description: 'Liquid Reserves',
-                    details: 'Readily available for emergencies. Low returns but high safety.',
-                    risk: 'Very Low',
-                    returns: '2-4% annually',
-                    examples: '• Savings account\n• Money market funds\n• Liquid mutual funds',
-                    tips: 'Keep 6 months expenses here. Essential for emergencies.'
-                }
-            };
-
-            const data = assets[asset] || assets['Equity'];
-            document.getElementById('assetModalContent').innerHTML = `
-                <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">${data.emoji}</div>
-                    <h2>${asset}</h2>
-                </div>
-                <h3 style="margin-bottom: 0.5rem; color: var(--text-dark);">${data.description}</h3>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem;">${data.details}</p>
-                
-                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08)); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-                    <p><strong>Risk Level:</strong> ${data.risk}</p>
-                    <p><strong>Expected Returns:</strong> ${data.returns}</p>
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="margin-bottom: 0.5rem;">Examples:</h4>
-                    <p style="color: var(--text-light); white-space: pre-line;">${data.examples}</p>
-                </div>
-
-                <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08)); border-radius: 8px; padding: 1rem;">
-                    <h4 style="margin-bottom: 0.5rem;">💡 Pro Tips:</h4>
-                    <p style="color: var(--text-light);">${data.tips}</p>
-                </div>
-            `;
-            document.getElementById('assetModal').classList.add('show');
-        }
-
-        function closeAssetModal(event) {
-            if (event && event.target.id !== 'assetModal') return;
-            document.getElementById('assetModal').classList.remove('show');
-        }
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

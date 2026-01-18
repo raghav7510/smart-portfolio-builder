@@ -1,3 +1,13 @@
+"""
+Smart Portfolio Builder
+Developed by: Raghav Dhanotiya
+Email: raghav74dhanotiya@gmail.com
+Contact: +91 9109657983
+
+A modern web application for personal investment portfolio planning
+with beautiful UI/UX and powerful financial calculations.
+"""
+
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from functools import wraps
@@ -7,7 +17,9 @@ import os
 # Get the directory where this file is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
+app = Flask(__name__, 
+            template_folder=os.path.join(BASE_DIR, 'templates'), 
+            static_folder=os.path.join(BASE_DIR, 'static'))
 
 # ===== LOGGING & ERROR HANDLING =====
 logging.basicConfig(level=logging.INFO)
@@ -77,23 +89,28 @@ def get_portfolio_allocation(risk_score):
         profile = 'Conservative'
         emoji = '🛡️'
         title = 'Capital Protector'
+        color = '#10B981'
     elif risk_score <= 14:
         profile = 'Balanced'
         emoji = '⚖️'
         title = 'Growth Seeker'
+        color = '#F59E0B'
     elif risk_score <= 18:
         profile = 'Aggressive'
         emoji = '📈'
         title = 'Growth Investor'
+        color = '#EF4444'
     else:
         profile = 'Maximum Growth'
         emoji = '🚀'
         title = 'Wealth Builder'
+        color = '#8B5CF6'
     
     return {
         'profile': profile,
         'emoji': emoji,
         'title': title,
+        'color': color,
         'allocation': allocations[profile]
     }
 
@@ -106,7 +123,7 @@ def calculate_wealth_projection(initial_investment, monthly_contribution, annual
     for month in range(0, years * 12 + 1):
         projections.append({
             'month': month,
-            'year': month / 12,
+            'year': round(month / 12, 2),
             'value': round(value, 2)
         })
         value = value * (1 + monthly_rate) + monthly_contribution
@@ -146,48 +163,37 @@ def generate_insights(metrics, profile, scenarios):
     """Generate actionable insights from calculations"""
     insights = []
     
-    # Savings insights
     if metrics['monthly_savings'] > 0:
         insights.append({
             'type': 'positive',
-            'title': '💰 Good Savings Rate',
-            'message': f"You can save ₹{int(metrics['monthly_savings'])} monthly",
-            'action': 'Optimize your portfolio with this amount'
+            'title': 'Good Savings Rate',
+            'message': f"₹{int(metrics['monthly_savings'])} monthly",
+            'icon': '💰'
         })
     else:
         insights.append({
             'type': 'warning',
-            'title': '⚠️ No Savings',
-            'message': 'Your expenses exceed income',
-            'action': 'Reduce expenses or increase income'
+            'title': 'No Savings',
+            'message': 'Income ≤ Expenses',
+            'icon': '⚠️'
         })
     
-    # Emergency fund insights
     emergency = metrics['emergency_fund']
     if emergency > 0:
         insights.append({
             'type': 'info',
-            'title': '🛡️ Emergency Fund Target',
-            'message': f"Build ₹{int(emergency)} (6 months expenses)",
-            'action': 'Keep this in liquid investments'
+            'title': 'Emergency Fund',
+            'message': f"₹{int(emergency)} (6 months)",
+            'icon': '🛡️'
         })
     
-    # Profile insights
-    insights.append({
-        'type': 'profile',
-        'title': f"{profile['emoji']} {profile['title']}",
-        'message': f"Your risk profile: {profile['profile']}",
-        'action': f"Allocation: {', '.join([f'{k} {v}%' for k, v in scenarios.items()])}"
-    })
-    
-    # Growth insights
     best_case = scenarios['best']['final_value']
     expected = scenarios['expected']['final_value']
     insights.append({
         'type': 'projection',
-        'title': '📈 Wealth Growth',
-        'message': f"Expected: ₹{int(expected)} | Best case: ₹{int(best_case)}",
-        'action': 'Stay invested and maintain discipline'
+        'title': 'Wealth Growth',
+        'message': f"₹{int(expected)} expected",
+        'icon': '📈'
     })
     
     return insights
@@ -208,11 +214,10 @@ def index():
     risk_score=(0, 20)
 )
 def calculate():
-    """Main calculation endpoint with validation"""
+    """Main calculation endpoint"""
     try:
         data = request.json
         
-        # Extract inputs with validation
         monthly_income = float(data.get('income', 50000))
         monthly_expenses = float(data.get('expenses', 30000))
         initial_investment = float(data.get('initial_investment', 100000))
@@ -221,25 +226,16 @@ def calculate():
         risk_score = int(data.get('risk_score', 10))
         custom_allocation = data.get('custom_allocation', None)
         
-        # Validate logical constraints
         if monthly_income <= monthly_expenses:
             return jsonify({
                 'success': False,
-                'error': 'Income must be greater than expenses',
-                'suggestion': 'Adjust your monthly expenses'
+                'error': 'Income must be greater than expenses'
             }), 400
         
-        # Calculate financial metrics
         metrics = calculate_portfolio_metrics(monthly_income, monthly_expenses)
-        
-        # Get portfolio profile
         profile_data = get_portfolio_allocation(risk_score)
         portfolio = custom_allocation if custom_allocation else profile_data['allocation']
-        
-        # Calculate scenarios
         scenarios = calculate_scenarios(portfolio, initial_investment, monthly_contribution, investment_horizon)
-        
-        # Add helpful insights
         insights = generate_insights(metrics, profile_data, scenarios)
         
         return jsonify({
@@ -255,58 +251,6 @@ def calculate():
         logger.error(f"Calculation error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
-@app.route('/api/allocation-breakdown', methods=['POST'])
-def allocation_breakdown():
-    """Get detailed allocation breakdown"""
-    data = request.json
-    portfolio = data.get('portfolio', {})
-    
-    asset_details = {
-        'Equity': {
-            'color': '#3B82F6',
-            'description': 'Stocks and equity funds',
-            'risk': 'High',
-            'return': '8-16% annually',
-            'examples': 'NSE, BSE stocks, equity mutual funds'
-        },
-        'Debt': {
-            'color': '#10B981',
-            'description': 'Bonds and fixed income',
-            'risk': 'Low',
-            'return': '5-8% annually',
-            'examples': 'Government securities, bonds'
-        },
-        'Gold': {
-            'color': '#F59E0B',
-            'description': 'Precious metals',
-            'risk': 'Moderate',
-            'return': '3-9% annually',
-            'examples': 'Gold ETF, sovereign gold bonds'
-        },
-        'Cash': {
-            'color': '#6B7280',
-            'description': 'Liquid reserves',
-            'risk': 'Very Low',
-            'return': '2-4% annually',
-            'examples': 'Savings account, money market'
-        }
-    }
-    
-    breakdown = []
-    for asset, weight in portfolio.items():
-        details = asset_details.get(asset, {})
-        breakdown.append({
-            'asset': asset,
-            'weight': weight,
-            'color': details.get('color'),
-            'description': details.get('description'),
-            'risk': details.get('risk'),
-            'return': details.get('return'),
-            'examples': details.get('examples')
-        })
-    
-    return jsonify({'breakdown': breakdown})
-
 @app.route('/api/sip-calculator', methods=['POST'])
 @validate_input(
     monthly_sip=(100, 10000000),
@@ -314,7 +258,7 @@ def allocation_breakdown():
     years=(1, 50)
 )
 def sip_calculator():
-    """SIP (Systematic Investment Plan) calculator with validation"""
+    """SIP calculator endpoint"""
     try:
         data = request.json
         monthly_sip = float(data.get('monthly_sip', 5000))
@@ -325,7 +269,6 @@ def sip_calculator():
         total_invested = monthly_sip * years * 12
         final_value = 0
         
-        # Calculate SIP future value
         for month in range(1, years * 12 + 1):
             final_value += monthly_sip * ((1 + monthly_rate) ** (years * 12 - month + 1))
         
@@ -339,7 +282,6 @@ def sip_calculator():
             'final_value': round(final_value, 2),
             'gain': round(gain, 2),
             'gain_percentage': round((gain / total_invested) * 100, 2) if total_invested > 0 else 0,
-            'power_of_compounding': round(gain, 2)
         })
     except Exception as e:
         logger.error(f"SIP calculation error: {str(e)}")
@@ -352,17 +294,15 @@ def sip_calculator():
     years=(1, 50)
 )
 def comparison():
-    """Compare lump sum vs SIP with validation"""
+    """Compare lump sum vs SIP"""
     try:
         data = request.json
         amount = float(data.get('amount', 100000))
         annual_return = float(data.get('annual_return', 0.10))
         years = int(data.get('years', 10))
         
-        # Lump sum
         lump_sum_final = amount * ((1 + annual_return) ** years)
         
-        # SIP (same total invested over time)
         monthly_sip = amount / (years * 12)
         monthly_rate = annual_return / 12
         sip_final = 0
@@ -386,12 +326,11 @@ def comparison():
             },
             'sip_advantage': round(sip_advantage, 2),
             'better_strategy': 'SIP' if sip_advantage > 0 else 'Lump Sum',
-            'recommendation': 'SIP is better for risk-averse investors' if sip_advantage >= 0 else 'Lump sum performs better in rising markets'
         })
     except Exception as e:
         logger.error(f"Comparison error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == '__main__':
-    print("Starting Flask app on http://127.0.0.1:5000")
-    app.run(host='127.0.0.1', port=5000, debug=False, threaded=True)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
