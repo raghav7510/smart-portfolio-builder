@@ -200,6 +200,11 @@ def generate_insights(metrics, profile, scenarios):
 
 # ===== ROUTES =====
 
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for Railway"""
+    return jsonify({'status': 'healthy'}), 200
+
 @app.route('/')
 def index():
     return render_template('index.html')
