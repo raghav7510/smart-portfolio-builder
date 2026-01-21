@@ -8,11 +8,16 @@ A premium financial planning application with portfolio, SIP, retirement,
 tax, loan, and mutual fund calculators with beautiful UI and advanced analytics.
 """
 
+# ===== CORE IMPORTS =====
 import streamlit as st
 import pandas as pd
 import numpy as np
+
+# ===== VISUALIZATION IMPORTS =====
 import plotly.graph_objects as go
 import plotly.express as px
+
+# ===== UTILITY IMPORTS =====
 from datetime import datetime, timedelta
 import json
 
